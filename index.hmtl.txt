@@ -1,0 +1,84 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHALO PADHTE H</title>
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <h1>CHALO PADHTE H</h1>
+        <p>Your one-stop hub for JEE, NEET, CA exam prep</p>
+        <nav>
+            <a href="#materials">Materials</a>
+            <a href="#doubts">Doubts</a>
+            <a href="#progress">Progress</a>
+        </nav>
+    </header>
+
+    <!-- Login / Signup -->
+    <section id="login">
+        <h2>Login / Signup</h2>
+        <input type="text" id="username" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <button id="loginBtn">Login / Signup</button>
+        <p id="loginMsg"></p>
+    </section>
+
+    <!-- Materials -->
+    <section id="materials">
+        <h2>Study Materials</h2>
+
+        <!-- Ad Placeholder -->
+        <div class="ad-container">
+            <p>Ad Placeholder (Paste AdSense code here)</p>
+        </div>
+
+        <!-- Admin Upload -->
+        <h3>Admin Upload (You)</h3>
+        <input type="text" id="adminSubject" placeholder="Subject (Physics/Chemistry/Math/Biology)">
+        <input type="text" id="adminChapter" placeholder="Chapter Name">
+        <input type="file" id="adminFile" accept="application/pdf">
+        <button id="uploadBtn">Upload PDF</button>
+        <p id="uploadMsg"></p>
+
+        <!-- Search -->
+        <input type="text" id="searchBar" placeholder="Search by subject/chapter">
+        <div class="material-grid" id="materialList">
+            <!-- Material cards loaded dynamically -->
+        </div>
+    </section>
+
+    <!-- Doubts -->
+    <section id="doubts">
+        <h2>Ask Your Doubts</h2>
+        <textarea id="doubtText" placeholder="Write your doubt here"></textarea><br>
+        <input type="file" id="doubtFile" accept="image/*"><br>
+        <button id="submitDoubt">Submit Doubt</button>
+        <p id="doubtMsg"></p>
+    </section>
+
+    <!-- Progress -->
+    <section id="progress">
+        <h2>Your Progress</h2>
+        <canvas id="progressChart" width="400" height="200"></canvas>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 CHALO PADHTE H. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

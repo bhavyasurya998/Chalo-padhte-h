@@ -1,0 +1,148 @@
+// Firebase config
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "SENDER_ID",
+    appId: "APP_ID"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+// --- Login / Signup ---
+const loginBtn = document.getElementById("loginBtn");
+const loginMsg = document.getElementById("loginMsg");
+
+loginBtn.addEventListener("click", () => {
+    const email = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+
+    auth.signInWithEmailAndPassword(email, password)
+    .then(user => {
+        loginMsg.textContent = `Welcome, ${email}!`;
+        loadMaterials();
+    })
+    .catch(error => {
+        auth.createUserWithEmailAndPassword(email, password)
+        .then(user => {
+            loginMsg.textContent = `Account created! Welcome, ${email}!`;
+            loadMaterials();
+        })
+        .catch(err => { loginMsg.textContent = err.message; });
+    });
+});
+
+// --- Load Materials ---
+const materialList = document.getElementById("materialList");
+
+function loadMaterials(){
+    materialList.innerHTML = "";
+    db.collection("materials").get().then(snapshot => {
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const card = document.createElement("div");
+            card.className = "material-card";
+            card.dataset.subject = data.subject;
+            card.dataset.chapter = data.chapter;
+            card.innerHTML = `
+                <h3>${data.subject} - ${data.chapter}</h3>
+                <button onclick="window.open('${data.pdfUrl}','_blank')">View/Download</button>
+            `;
+            materialList.appendChild(card);
+        });
+    });
+}
+
+// --- Search Bar ---
+const searchBar = document.getElementById("searchBar");
+searchBar.addEventListener("input", () => {
+    const filter = searchBar.value.toLowerCase();
+    const cards = document.querySelectorAll(".material-card");
+    cards.forEach(card => {
+        const subject = card.dataset.subject.toLowerCase();
+        const chapter = card.dataset.chapter.toLowerCase();
+        card.style.display = (subject.includes(filter) || chapter.includes(filter)) ? "block" : "none";
+    });
+});
+
+// --- Admin Upload ---
+const uploadBtn = document.getElementById("uploadBtn");
+const uploadMsg = document.getElementById("uploadMsg");
+
+uploadBtn.addEventListener("click", () => {
+    const subject = document.getElementById("adminSubject").value;
+    const chapter = document.getElementById("adminChapter").value;
+    const file = document.getElementById("adminFile").files[0];
+
+    if(!subject || !chapter || !file){ uploadMsg.textContent="Fill all fields & select file!"; return; }
+
+    const storageRef = storage.ref(`materials/${subject}/${chapter}/${file.name}`);
+    const uploadTask = storageRef.put(file);
+
+    uploadTask.on('state_changed',
+        snapshot => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes)*100;
+            uploadMsg.textContent = `Uploading... ${Math.round(progress)}%`;
+        },
+        error => { uploadMsg.textContent = `Error: ${error.message}`; },
+        () => {
+            uploadTask.snapshot.ref.getDownloadURL().then(url => {
+                db.collection("materials").add({
+                    subject, chapter, pdfUrl: url, date: new Date()
+                }).then(() => {
+                    uploadMsg.textContent = "File uploaded successfully!";
+                    document.getElementById("adminSubject").value="";
+                    document.getElementById("adminChapter").value="";
+                    document.getElementById("adminFile").value="";
+                    loadMaterials();
+                });
+            });
+        }
+    );
+});
+
+// --- Doubts ---
+const submitDoubt = document.getElementById("submitDoubt");
+const doubtMsg = document.getElementById("doubtMsg");
+
+submitDoubt.addEventListener("click", () => {
+    const text = document.getElementById("doubtText").value;
+    const file = document.getElementById("doubtFile").files[0];
+
+    if(!text && !file){ doubtMsg.textContent="Enter text or upload image!"; return; }
+
+    if(file){
+        const storageRef = storage.ref('doubts/'+file.name);
+        storageRef.put(file).then(snapshot => {
+            snapshot.ref.getDownloadURL().then(url => {
+                db.collection("doubts").add({text, image:url, date:new Date()});
+                doubtMsg.textContent = "Doubt submitted!";
+                document.getElementById("doubtText").value="";
+                document.getElementById("doubtFile").value="";
+            });
+        });
+    } else {
+        db.collection("doubts").add({text, image:null, date:new Date()});
+        doubtMsg.textContent = "Doubt submitted!";
+        document.getElementById("doubtText").value="";
+    }
+});
+
+// --- Progress Chart ---
+const ctx = document.getElementById('progressChart').getContext('2d');
+const progressChart = new Chart(ctx,{
+    type:'bar',
+    data:{
+        labels:['Physics','Chemistry','Math','Biology'],
+        datasets:[{
+            label:'Chapters Completed',
+            data:[3,2,4,1],
+            backgroundColor:'#00bfff'
+        }]
+    },
+    options:{ scales:{ y:{ beginAtZero:true }}, plugins:{ legend:{ display:false } } }
+});
